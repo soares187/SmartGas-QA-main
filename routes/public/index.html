@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Gás - ESP32</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 350px;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .status-box {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        .ar-limpo {
+            background-color: #e6f4ea;
+            color: #137333;
+        }
+        .gas-detectado {
+            background-color: #fce8e6;
+            color: #c5221f;
+            animation: piscar 1s infinite alternate;
+        }
+        .aguardando {
+            background-color: #f1f3f4;
+            color: #5f6368;
+        }
+        @keyframes piscar {
+            from { opacity: 1; }
+            to { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Status do Sensor MQ-2</h1>
+        <div id="status-tela" class="status-box aguardando">Aguardando ESP32...</div>
+    </div>
+
+    <script>
+        function buscarDadosDoSensor() {
+            // Faz o fetch na rota GET que criamos na memória da API
+            fetch('/api/sensor/atual')
+                .then(response => response.json())
+                .then(data => {
+                    const painel = document.getElementById('status-tela');
+                    
+                    // Altera o texto da tela
+                    painel.innerText = data.status;
+
+                    // Altera os estilos dinamicamente dependendo da string enviada pelo ESP32
+                    if (data.status === "Gas Detectado") {
+                        painel.className = "status-box gas-detectado";
+                    } else if (data.status === "Ar Limpo") {
+                        painel.className = "status-box ar-limpo";
+                    } else {
+                        painel.className = "status-box aguardando";
+                    }
+                })
+                .catch(erro => console.error("Erro ao ler dados da memória:", erro));
+        }
+
+        // Fica perguntando o valor para a API a cada 1000ms (1 segundo)
+        setInterval(buscarDadosDoSensor, 500);
+    </script>
+</body>
+</html>
